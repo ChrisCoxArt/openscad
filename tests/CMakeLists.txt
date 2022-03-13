@@ -295,6 +295,9 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/let-module-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate_extrude-hole.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate-empty-bbox.scad
+
+  # Not really different expectations, just fastcsg-specific tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/experimental/fastcsg-issue4150.scad
 )
 
 list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
@@ -369,7 +372,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
             AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
             AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-remesh")
           if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
             set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
           endif()
@@ -1137,11 +1140,20 @@ add_cmdline_test(lazyunion-stlpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX
 add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal)
-add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS}                     ARGS --enable=fast-csg --enable=fast-csg-trust-corefinement --render)
-add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF} ARGS --enable=fast-csg --render)
+add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS}                     ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF} ARGS --enable=fast-csg --enable=fast-csg-remesh --render)
 add_cmdline_test(fastcsg-lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
 add_cmdline_test(fastcsg-lazyunion-amfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=AMF)
 add_cmdline_test(fastcsg-lazyunion-3mfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=3MF)
+
+list(APPEND FASTCSG_REMESH_FILES
+  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cubes.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-1.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
+)
+
+add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh-predictibly --enable=fast-csg-trust-corefinement --render)
 
 #
 # Trivial Export/Import files
@@ -1283,6 +1295,7 @@ add_cmdline_test(openscad-colorscheme-sunset          OPENSCAD FILES ${EXAMPLES_
 add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${EXAMPLES_DIR}/Basics/logo.scad SUFFIX png ARGS --colorscheme=Starnight)
 add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${EXAMPLES_DIR}/Basics/logo.scad SUFFIX png ARGS --colorscheme=Monotone)
 add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${EXAMPLES_DIR}/Basics/CSG.scad  SUFFIX png ARGS --colorscheme=Metallic --render)
+add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${EXAMPLES_DIR}/Basics/logo.scad SUFFIX png ARGS --colorscheme=ClearSky)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
